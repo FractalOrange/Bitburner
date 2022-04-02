@@ -44,25 +44,26 @@ export async function main(ns) {
                 }
             }
         }
-
-        // Store the info about the gang an members, sort the members from weakest to strongest.
-        let members = ns.gang.getMemberNames()
-        if (ns.gang.getGangInformation().isHacking == true) {
-            members.sort((a,b) => (ns.gang.getMemberInformation(a).hack-ns.gang.getMemberInformation(b).hack))
-            ns.gang.setMemberTask(members[0],"Train Hacking")
-        } else {
-            members.sort((a,b) => (ns.gang.getMemberInformation(a).str-ns.gang.getMemberInformation(b).str))
-            ns.gang.setMemberTask(members[0],"Train Combat")
-        }
-
             
         // Any remaining members do the task that earns the most respect per second while also earning money
         // This makes sure when we max out we end up on human trafficking
-        for(let i = 1; i < members.length; i++){
-            ns.gang.setMemberTask(members[i], bestTask(members[i]))
+        for(let member of ns.gang.getMemberNames()){
+            ns.gang.setMemberTask(member, bestTask(member))
             // Need to wait to let the gang interface update the numbers so the next members best choice can be chosen
             // properly. This is particularly true for vigilante justice
             await ns.sleep(2000)
+        }
+
+        // If rep is low, make sure we train our weakest member
+        if (ns.gang.getGangInformation().respect < 100_000){
+            let members = ns.gang.getMemberNames()
+            if (ns.gang.getGangInformation().isHacking == true) {
+                members.sort((a,b) => (ns.gang.getMemberInformation(a).hack-ns.gang.getMemberInformation(b).hack))
+                ns.gang.setMemberTask(members[0],"Train Hacking")
+            } else {
+                members.sort((a,b) => (ns.gang.getMemberInformation(a).str-ns.gang.getMemberInformation(b).str))
+                ns.gang.setMemberTask(members[0],"Train Combat")
+            }
         }
 
         // Decide whether or not to go to war

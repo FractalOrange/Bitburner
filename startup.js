@@ -141,7 +141,7 @@ export async function main(ns) {
 		|| ns.getPlayer().agility < statThreshold)
 		&& ns.getPlayer().money < 100 * 1000
 		|| ns.getPlayer().numPeopleKilled < 30
-		|| ns.heart.break() > -90) {
+		|| ns.heart.break() > -54000) {
 			isTrained = false
 			for (let i = 0; i < 10; i++){
 				ns.tail("startup.js","home")

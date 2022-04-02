@@ -37,8 +37,9 @@ export async function main(ns) {
 	// Set the minimum number of augments required to ascend
 	let lotsOfAugments = 45
 	let minAugments = 5
-	if (ns.getOwnedAugmentations().length > lotsOfAugments){
-		minAugments = 5
+	// If we're in an established gang, let the gang do the work for us.
+	if (ns.gang.inGang() && ns.gang.getGangInformation().respect > 1_000_000){
+		minAugments = 3
 	}
 	let maxAugments = 2 * minAugments
 
@@ -73,10 +74,31 @@ export async function main(ns) {
 
 		// Create a list of all available non-bladeburner augments.
 		for (let faction of ns.getPlayer().factions){
-			// Add bladeburner and gang augments separately
-			if (faction == "Bladeburners"
-			|| ns.gang.inGang() && ns.gang.getGangInformation().faction == faction){
+			// Add bladeburner augments separately
+			if (faction == "Bladeburners"){
 				continue
+			}
+			// Only add gang augments we can already afford since we can't farm the rep easily.
+			if (ns.gang.inGang() && ns.gang.getGangInformation().faction == faction) {
+				for (let augment of ns.getAugmentationsFromFaction(faction)){
+					// Only add if it isn't banned and it hasn't already been added.
+					if (availableAugments.includes(augment) == false
+					&& bannedAugments.includes(augment) == false
+					&& tempBannedAugments.includes(augment) == false){			
+						// Make sure we meet requirements. If there's a requirement we don't own, make the condition false.
+						let meetsRequirements = true
+						for (let requirements of ns.getAugmentationPrereq(augment)){
+							if (ns.getOwnedAugmentations(true).includes(requirements) == false){
+								meetsRequirements = false
+							}
+						}
+						if (meetsRequirements == true && fastestFarmingFactions(augment)[1] < 0){
+							availableAugments.push(augment)
+						} else {
+							bannedAugments.push(augment)
+						}
+					}
+				}
 			}
 			for (let augment of ns.getAugmentationsFromFaction(faction)){
 				// Only add if it isn't banned and it hasn't already been added.
@@ -147,6 +169,7 @@ export async function main(ns) {
 		for (let i = 0; i < availableAugments.length; i++) {
 			let augment = availableAugments[i]
 			if (fastestFarmingFactions(augment)[1] <= 0) {
+
 				// Use the potentialAugments array to calculate the new total cost with the next augment added in.
 				// Sort from most to least expensive to calculate the cost, and use potentialCost to store the value.
 				potentialAugments = augmentsToBuy.concat([augment]).sort(
@@ -167,6 +190,10 @@ export async function main(ns) {
 				}
 			}
 		}
+		if (augmentsToBuy.length >= minAugments){
+			break
+		}
+
 		// Find the number of augments we can buy based on the current amount of 
 		// money, buying from lowest to highest rep requirement.
 

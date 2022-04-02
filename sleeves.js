@@ -128,8 +128,8 @@ export async function main(ns) {
                 for (let faction of ns.getPlayer().factions) {
                     if (combatGangs.includes(faction)){
                         if (ns.gang.createGang(faction)) {
-                            run ("gangs.js")
-                            run ("gangwarfare.js")
+                            run("gangs.js")
+                            run("gangwarfare.js")
                             break
                         }
                     }
@@ -249,8 +249,8 @@ export async function main(ns) {
 
           
             // Then farm heists if nothing else to do and we're not doing it already.
-            if (ns.sleeve.getTask(i).crime != "Heist"){
-                ns.sleeve.setToCommitCrime(i, "Heist")
+            if (ns.sleeve.getTask(i).crime != "Homicide"){
+                ns.sleeve.setToCommitCrime(i, "Homicide")
             }
         }
     }
