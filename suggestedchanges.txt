@@ -1,0 +1,14 @@
+bladeburner api doesn't interrup work, even though clicking doesn
+
+what is ns.sleeve.getInformation().workRepGain? It looks like one cycle's worth of rep. This is pretty inconsistent with other variables, both in name (it's not a rate) and in 
+time period (it's a cycle, rather than a second or something)
+
+Corp buys research that's already owned if you ask it to
+
+Sleeves gives the shock error if you try to buy augments, but also buys them.
+
+Expanding to a city in corp overwrites the old city
+
+Dividends is listed as money per second but is really money per cyckle
+
+Sleep has a maxmimum input, around 2^30

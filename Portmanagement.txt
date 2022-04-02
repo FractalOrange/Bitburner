@@ -1,0 +1,15 @@
+This is where we store information about what the ports are doing so I don't get confused. In this game ports can contain up to 50 elements.
+
+Port 1 manages whether or not we're burning blades. If we are, it has a single 0 in it, when we finish a bladeburner loop, we write a 1. This triggers the 
+ascension to stop timing the bladeburner loop and start working on factions.
+It is referenced in factionwork.js and bladeburner.js.
+
+Port 2 is reserverd for another bladeburner signal
+
+Port 3 lists the factions we need to work for, from most to least important, and is produced by augmentbuyer. It lists all factions for the sleeves to work on
+It is referenced in augmentbuyer.js, and sleeves.js.
+
+Port 4 lists the factions we will buy augments from next ascension (because we will unlock donations, or it's just faster due to increased favour.)
+It is referenced in augmentbuyer.js and sleeves.js (no need to mention it in factionwork.js since we don't work for these factions on our main body)
+
+Port 5 lists the factions we need to work for, and is just mfor the main body
