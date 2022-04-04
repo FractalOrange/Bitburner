@@ -18,8 +18,6 @@ export async function main(ns) {
 	let megaCorps = [ "OmniTek Incorporated", "Bachman & Associates", "NWO", "Clarke Incorporated", "KuaiGong International", "Blade Industries", "ECorp", "MegaCorp", 
 	"Four Sigma", "Fulcrum Technologies"]
 
-
-
 	let factionRep = 200 * 1000
 	
 	for (let corp of megaCorps){

@@ -9,6 +9,8 @@ export async function main(ns) {
     let otherGangs = Array.from(gangFactions)
     otherGangs.splice(gangFactions.indexOf(myGang), 1)
 
+    let minRespect = 2_000_000
+
     while(true == true){
 
         // Make sure gangwarfare is running
@@ -55,7 +57,7 @@ export async function main(ns) {
         }
 
         // If rep is low, make sure we train our weakest member
-        if (ns.gang.getGangInformation().respect < 100_000){
+        if (ns.gang.getGangInformation().respect < 2 * minRespect){
             let members = ns.gang.getMemberNames()
             if (ns.gang.getGangInformation().isHacking == true) {
                 members.sort((a,b) => (ns.gang.getMemberInformation(a).hack-ns.gang.getMemberInformation(b).hack))
@@ -120,10 +122,10 @@ export async function main(ns) {
             for (let stat of stats) {
                 statWeights += taskStats[stat + "Weight"] * ns.gang.getMemberInformation(member)[stat] / 100
             }
-            // Maximise respect for tasks that raise respect faster than wanted. If total respect is more than 1_000_000,
+            // Maximise respect for tasks that raise respect faster than wanted. If total respect is more than minRespect,
             // then we only look at tasks that raise money
             if (statWeights > taskStats["difficulty"] * 4 
-                && (taskStats["baseMoney"] > 0 || ns.gang.getGangInformation().respect < 1_000_000)) {
+                && (taskStats["baseMoney"] > 0 || ns.gang.getGangInformation().respect < minRespect)) {
                 ns.gang.setMemberTask(member, task)
                 if (ns.gang.getMemberInformation(member)["respectGain"] > bestRespect
                 && ns.gang.getMemberInformation(member)["respectGain"] > ns.gang.getMemberInformation(member)["wantedLevelGain"]){

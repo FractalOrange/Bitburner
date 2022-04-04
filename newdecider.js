@@ -49,7 +49,28 @@ export async function main(ns) {
 	// Should take into account the scripts we want to save that are already running i.e. dont save room 
 	// for scripts we're running
 
+	// Produce an array that relates companies to stock symbols
+	let conversion = ns.read("companystockconversion.txt").split(";\r\n")
+	let companyStocks = []
+	for (let part of conversion){
+		companyStocks.push(part.split(","))
+	}
+
 	while (true == true) {
+		// Get a list of which stocks are long or short to make sure we weaken and grow the right servers.
+		// This might take too much time to be efficient, if so can just get positions.
+		let longStocks = []
+		let shortStocks = []
+		// Wait until we can get the relevant info from the other scripts
+		while (ns.getPortHandle(9).empty() == true) {
+			await ns.sleep(10)
+		}
+		while (ns.getPortHandle(9).empty() == false) {
+			longStocks.push(ns.readPort(9))
+		}
+		while (ns.getPortHandle(11).empty() == false) {
+			shortStocks.push(ns.readPort(11))
+		}
 
         // If we're working for a faction, share resources, otherwise train hacking.
         if (ns.getPlayer().workRepGainRate > 0){
@@ -83,7 +104,7 @@ export async function main(ns) {
 					continue
 				}
 				targetServers.push(futureTargetServers.shift())
-				targetServers.sort((a, b) => (ns.getServerGrowth(a) - ns.getServerGrowth(b))).reverse()
+				targetServers.sort((a, b) => (ns.getServerMaxMoney(a) - ns.getServerGrowth(b))).reverse()
 			}
 		}
 		// Update servers we can use by updating the servers that have been hacked and adding in any
@@ -174,6 +195,25 @@ export async function main(ns) {
 				}
 			}
 
+			let companyStock = ""
+			let growStock = false
+			let hackStock = false
+			for (let company of companyStocks) {
+				if (ns.getServer(target) == company[0]){
+					companyStock = company[1]
+					break
+				}
+			}
+			for (let stock of longStocks) {
+				if (stock == companyStock) {
+					growStock = true
+				}
+			}
+			for (let stock of shortStocks) {
+				if (stock == companyStock) {
+					hackStock = true
+				}
+			}
 
 			// Find the current security level, how much this server would weaken in one iteration,
 			// and how many iterations it would take us to hit the minimum level.
@@ -255,7 +295,7 @@ export async function main(ns) {
 							}
 							if (availableThreads >= hackThreads) {
 
-								if (ns.exec("hack.js", server, hackThreads, target) == 0) {
+								if (ns.exec("hack.js", server, hackThreads, target, hackStock) == 0) {
 									if (j == usableServers.length - 1) {
 										triedEverything = true
 									}
@@ -267,7 +307,7 @@ export async function main(ns) {
 								if (j == usableServers.length - 1) {
 									triedEverything = true
 								}
-								if (ns.exec("hack.js", server, availableThreads, target) == 0) {
+								if (ns.exec("hack.js", server, availableThreads, target, hackStock) == 0) {
 									continue
 								}
 								hackThreads = hackThreads - availableThreads
@@ -320,7 +360,7 @@ export async function main(ns) {
 							continue
 						}
 						if (availableThreads >= growThreads) {
-							if (ns.exec("grow.js", server, growThreads, target) == 0) {
+							if (ns.exec("grow.js", server, growThreads, target, growStock) == 0) {
 								if (j == usableServers.length - 1) {
 									triedEverything = true
 								}
@@ -334,7 +374,7 @@ export async function main(ns) {
 								triedEverything = true
 							}
 
-							if (ns.exec("grow.js", server, availableThreads, target) == 0) {
+							if (ns.exec("grow.js", server, availableThreads, target, growStock) == 0) {
 								continue
 							}
 							growThreads = growThreads - availableThreads

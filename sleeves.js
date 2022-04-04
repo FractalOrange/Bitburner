@@ -169,6 +169,7 @@ export async function main(ns) {
                 let bestType = await bestSleeveWork(i, faction)
                 // If the faction can no longer be worked for, go look at the next one.
                 if (ns.sleeve.setToFactionWork(i, faction, bestType) == false){
+                    ns.readPort(3)
                     continue
                 } else {
                     break
@@ -188,6 +189,7 @@ export async function main(ns) {
                 let bestType = await bestSleeveWork(i, faction)
                 // If the faction can no longer be worked for, go look at the next one.
                 if (ns.sleeve.setToFactionWork(i, faction, bestType) == false){
+                    ns.readPort(4)
                     continue
                 } else {
                     break

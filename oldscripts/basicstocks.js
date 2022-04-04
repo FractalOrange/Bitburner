@@ -40,7 +40,7 @@ export async function main(ns) {
 		for (let i = 0; i < stocks.length; i++){
 			// Look for stocks to invest in, must be likely to increase and buying more won't put us over the edge
 			if (ns.stock.getForecast(stocks[i]) > 0.52 
-			&& investments[i][1] + ns.stock.getPurchaseCost(stocks[i], 1, "Long") < individualInvestment){
+			&& investments[i][1] + ns.stock.getPurchaseCost(stocks[i], 1000, "Long") < individualInvestment){
 				// Figure out how many new stocks we can buy
 				let newStocks = 1000
 				while (investments[i][1] + ns.stock.getPurchaseCost(stocks[i], newStocks, "Long") <= individualInvestment

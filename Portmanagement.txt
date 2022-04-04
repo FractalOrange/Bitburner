@@ -12,4 +12,11 @@ It is referenced in augmentbuyer.js, and sleeves.js.
 Port 4 lists the factions we will buy augments from next ascension (because we will unlock donations, or it's just faster due to increased favour.)
 It is referenced in augmentbuyer.js and sleeves.js (no need to mention it in factionwork.js since we don't work for these factions on our main body)
 
-Port 5 lists the factions we need to work for, and is just mfor the main body
+Port 5 lists the factions we need to work for, and is just for the main body. 
+It is referenced in augmentbuyer.js and factionwork.js
+
+Port 6 is reserved for more faction signals
+
+Port 9 and 11 store the stocks that are increasing, and decreasing, respectively, in order from highest to lowest confidence. Ports 10 and 12 store the confidence levels.
+We use them to communicate to our stockbuyer script which stocks to buy, our working script which companies to work for, and our hacking scripts whether to modify stocks with
+growing and hacking.

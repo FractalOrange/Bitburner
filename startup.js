@@ -43,11 +43,8 @@ export async function main(ns) {
 	ns.run("hashmanager.js")
 
 	// Run the stock data script to slowly farm money
-	if (ns.getPlayer().hasTixApiAccess){
-		if (ns.getPlayer().has4SDataTixApi){
-			ns.run("basicstocks.js")
-		}
-	}
+	ns.run("findstocks.js")
+	ns.run("buystocks.js")
 
 	if (ns.getPlayer().hasCorporation == true
 	&& ns.getServerMaxRam("home") >= 2048) {
