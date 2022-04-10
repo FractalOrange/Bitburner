@@ -44,7 +44,6 @@ export async function main(ns) {
 
 	// Run the stock data script to slowly farm money
 	ns.run("findstocks.js")
-	ns.run("buystocks.js")
 
 	if (ns.getPlayer().hasCorporation == true
 	&& ns.getServerMaxRam("home") >= 2048) {
@@ -70,7 +69,10 @@ export async function main(ns) {
 		// Set a condition to break if we are not trained.
 		let isTrained = true
 		// Stop all current actions to let the script work.
-		ns.stopAction()
+		if (ns.getPlayer().crimeType == ""){
+			ns.stopAction()
+		}
+
 
 		// Run scripts we need but cant until we have room
 		if (ns.getServerMaxRam("home") >= 256){
@@ -181,7 +183,7 @@ export async function main(ns) {
 			if (ns.getServerMaxRam("home") >= 512){
 				ns.bladeburner.joinBladeburnerDivision()
 				ns.bladeburner.joinBladeburnerFaction()
-				ns.run('bladeburner.js', 1, simulacrumBool)
+				ns.run("factionwork.js", 1, !neuroreceptorBool, simulacrumBool)
 			}
 			// If isTrained is true we no longer change cities, and likely now meet money requirements for the appropriate factions.
             if (ns.getServerMaxRam("home") >= 256){
@@ -271,7 +273,7 @@ export async function main(ns) {
 
 	// Once the startup is finished run the ascension manager. There's no need to do it earlier since it pulls
 	// focus and it works better at higher hacking levels anyway.
-    ns.run("factionwork.js", 1, !neuroreceptorBool, simulacrumBool)
+    
 	ns.spawn("augmentbuyer.js")
 
 	// Set up a function to open all possible ports, nuke the server and run the breakin script on it.

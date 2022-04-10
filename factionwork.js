@@ -15,23 +15,39 @@ export async function main(ns) {
     // We make a list of the different possible types of work we can do for a faction
 	let workTypes = ["Hacking Contracts", "Security Work", "Field Work"]
 
+    // Set a stat threshold for carrying out bladeburner tasks
+    let bladeburnerStatThresh = 500
+    let crimeTime = 30 * 60 * 1000
+    
     while (true == true){
         // We want to run 1 full loop of bladeburner, then spend the same amount of time on rep farming.
 		// Only need to interrupt if we don't have the simulacrum.
         let startTime = Date.now()
 		if (simulacrumBool == false){
-			// We use port 1 to check bladeburner status. When it's empty that means we're running, when it has something
-			// in it that means we have completed a loop
-			ns.clearPort(1)
-            ns.stopAction()
-			ns.scriptKill("bladeburner.js","home")
-			ns.run("bladeburner.js", 1, false)
-			// Find the start of running bladeburner to compute the time it runs for
-			startTime = Date.now()
-			while(ns.getPortHandle(1).empty() == true){
-				await ns.sleep(1000)
-			}
-            ns.scriptKill("bladeburner.js", "home")
+                // We use port 1 to check bladeburner status. When it's empty that means we're running, when it has something
+                // in it that means we have completed a loop
+                ns.clearPort(1)
+                ns.stopAction()
+                ns.scriptKill("bladeburner.js","home")
+                ns.scriptKill("crime.js", "home")
+            if (ns.getPlayer().strength > bladeburnerStatThresh){
+                ns.run("bladeburner.js", 1, false)
+                // Find the start of running bladeburner to compute the time it runs for
+                startTime = Date.now()
+                while(ns.getPortHandle(1).empty() == true){
+                    await ns.sleep(1000)
+                }
+                ns.scriptKill("bladeburner.js", "home")
+            } else {
+                ns.run("crime.js", 1, crimeTime)
+                // Find the start of running bladeburner to compute the time it runs for
+                startTime = Date.now()
+                while(ns.getPortHandle(1).empty() == true){
+                    await ns.sleep(1000)
+                }
+                ns.scriptKill("crime.js", "home")
+            }
+
         // If we have the simulacrum, make sure we're running bladeburner as true.
 		} else {
             ns.kill("bladeburner.js", "home", false)

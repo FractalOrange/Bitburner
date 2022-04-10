@@ -61,15 +61,17 @@ export async function main(ns) {
 		// This might take too much time to be efficient, if so can just get positions.
 		let longStocks = []
 		let shortStocks = []
-		// Wait until we can get the relevant info from the other scripts
-		while (ns.getPortHandle(9).empty() == true) {
-			await ns.sleep(10)
-		}
-		while (ns.getPortHandle(9).empty() == false) {
-			longStocks.push(ns.readPort(9))
-		}
-		while (ns.getPortHandle(11).empty() == false) {
-			shortStocks.push(ns.readPort(11))
+		if(ns.getPlayer().hasTixApiAccess){
+			// Wait until we can get the relevant info from the other scripts
+			while (ns.getPortHandle(9).empty() == true) {
+				await ns.sleep(10)
+			}
+			while (ns.getPortHandle(9).empty() == false) {
+				longStocks.push(ns.readPort(9))
+			}
+			while (ns.getPortHandle(11).empty() == false) {
+				shortStocks.push(ns.readPort(11))
+			}
 		}
 
         // If we're working for a faction, share resources, otherwise train hacking.

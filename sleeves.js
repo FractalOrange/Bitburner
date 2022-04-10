@@ -52,7 +52,7 @@ export async function main(ns) {
             }
             // Make sure we're synched first
             if (ns.sleeve.getSleeveStats(i).sync < 100){
-                ns.sleeve.setToSynchronize(i)
+                ns.sleeve.setSleeveToSync(i)
                 continue
             }
 
@@ -128,8 +128,8 @@ export async function main(ns) {
                 for (let faction of ns.getPlayer().factions) {
                     if (combatGangs.includes(faction)){
                         if (ns.gang.createGang(faction)) {
-                            run("gangs.js")
-                            run("gangwarfare.js")
+                            ns.run("gangs.js")
+                            ns.run("gangwarfare.js")
                             break
                         }
                     }
@@ -138,7 +138,15 @@ export async function main(ns) {
 
             // Once basic tasks required for run are met, reduce shock.
             if (ns.sleeve.getSleeveStats(i).shock > 0) {
-                ns.sleeve.setToShockRecovery(i)
+                // If the gang is still getting started, make sure we're committing homicide.
+                if (!(ns.sleeve.getTask(i).task == "Crime"
+                && ns.sleeve.getTask(i).crime == "Homicide")
+                && ns.gang.getGangInformation().respect < 1_000_000){
+                    ns.sleeve.setToCommitCrime(i, "homicide")
+                    // If the gang is going strong, recover shock.
+                } else {
+                    ns.sleeve.setToShockRecovery(i)
+                }
                 continue
             }
 

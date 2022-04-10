@@ -76,14 +76,16 @@ export async function main(ns) {
                 ns.corporation.sellProduct(division, "Sector-12", product, "MAX", "0.8 * MP", true)
             }
         }
-        await ns.sleep(10*1000)
-        // while (ns.corporation.getCorporation().state != "PURCHASE"){
-        //     await ns.sleep(10)
-        // }
-        // while (ns.corporation.getCorporation().state != "START"){
-        //     await ns.sleep(10)
-        // }
-        // await ns.sleep(60*1000)
+        // Wait for 2 cycles to go by before accepting investment.
+        for (let i = 0; i < 2; i++){
+            while (ns.corporation.getCorporation().state != "PURCHASE"){
+                await ns.sleep(10)
+            }
+            while (ns.corporation.getCorporation().state != "START"){
+                await ns.sleep(10)
+            }
+        }
+
         while (ns.corporation.acceptInvestmentOffer()){
             await ns.sleep(10)
         }

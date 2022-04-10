@@ -19,6 +19,7 @@ export async function main(ns) {
     while(ns.getPlayer().hasTixApiAccess == false) {
         await ns.sleep (60 * 1000)
     }
+    ns.run("buystocks.js")
 
     let stocks = []
     for (let i = 0; i < ns.stock.getSymbols().length; i++){
