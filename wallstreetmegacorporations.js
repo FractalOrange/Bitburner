@@ -60,7 +60,7 @@ export async function main(ns) {
 				shortCertainties.push(ns.readPort(12))
 			}
 			// Check we're not working for a short stock
-			if (shortStocks.includes(companyStock)) {
+			if (ns.stock.getPosition(companyStock)[0] == 0) {
 				continue
 			}
 
@@ -87,7 +87,7 @@ export async function main(ns) {
 				}
 			}
 		}
-		await ns.sleep(30)
+        await ns.sleep(30)
 	}
 
     // This function figures out the best job for a given corp

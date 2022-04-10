@@ -106,7 +106,60 @@ export async function main(ns) {
 
     // Once we have the 4S data, move on to an easier loop.
 
+    while (true == true) {
+        // Wait until prices change
+        while (stocks[0].price == ns.stock.getPrice(stocks[0].name)) {
+            await ns.sleep(50)
+        }
+        // Update the stock objects
+        for (let stock of stocks) {
+            stock.price = ns.stock.getPrice(stock.name)
 
+            // Update certainty and direction
+            stock.certainty = ns.stock.getForecast(stock.name) - 0.5
+            stock.direction = Math.sign(stock.certainty)
+    
+            // Store the current estimate
+            stock.estimates.pop()
+            stock.estimates.unshift(stock.certainty)
+        }
+
+        // Count global information e.g. for identifying market cycles
+        let totalFlips = stocks.map(x => x.flipped).reduce((x,y) => x + y)
+
+        let increasingStocks = []
+        let decreasingStocks = []
+
+        // Sort stocks from highest to lowest certainty
+        stocks.sort((a,b) => b.certainty - a.certainty)
+        for (let i = 0; i < stocks.length; i++){
+            if (stocks[i].certainty > 0){
+                increasingStocks.push([stocks[i].name, stocks[i].certainty])
+            }
+        }
+        stocks.reverse()
+        for (let i = 0; i < stocks.length; i++){
+            if (stocks[i].certainty < 0){
+                decreasingStocks.push([stocks[i].name, stocks[i].certainty])
+            }
+        }
+        // Write to ports multiple times to make sure all the reading scripts can see them.
+        for (let i = 0; i < 40; i++) {
+            ns.clearPort(9)
+            ns.clearPort(10)
+            ns.clearPort(11)
+            ns.clearPort(12)
+            for (let entry of increasingStocks) {
+                await ns.writePort(9, entry[0])
+                await ns.writePort(10, entry[1])
+            }
+            for (let entry of decreasingStocks) {
+                await ns.writePort(11, entry[0])
+                await ns.writePort(12, entry[1])
+            }
+            await ns.sleep(50)
+        }
+    }
 
     function stockInfo(stockName) {
         let s = Object.create({})
