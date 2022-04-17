@@ -23,7 +23,8 @@ export async function main(ns) {
         // We want to run 1 full loop of bladeburner, then spend the same amount of time on rep farming.
 		// Only need to interrupt if we don't have the simulacrum.
         let startTime = Date.now()
-		if (simulacrumBool == false){
+        if (ns.getPlayer().inBladeburner){
+            if (simulacrumBool == false){
                 // We use port 1 to check bladeburner status. When it's empty that means we're running, when it has something
                 // in it that means we have completed a loop
                 ns.clearPort(1)
@@ -48,11 +49,13 @@ export async function main(ns) {
                 ns.scriptKill("crime.js", "home")
             }
 
-        // If we have the simulacrum, make sure we're running bladeburner as true.
-		} else {
-            ns.kill("bladeburner.js", "home", false)
-            ns.run("bladeburner.js", 1, true)
+            // If we have the simulacrum, make sure we're running bladeburner as true.
+            } else {
+                ns.kill("bladeburner.js", "home", false)
+                ns.run("bladeburner.js", 1, true)
+            }
         }
+
         let endTime = Date.now()
 		let runTime = endTime-startTime
         // Make sure we run for at least 5 minutes, in case we're not doing bladeburner.

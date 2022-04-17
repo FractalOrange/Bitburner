@@ -48,6 +48,11 @@ export async function main(ns) {
 
         // Update optimalNode
         while (true == true){
+            // Sell stocks to upgrade
+            for (let stock of ns.stock.getSymbols()) {
+                ns.stock.sell(stock, ns.stock.getPosition(stock)[0])
+                ns.stock.sellShort(stock, ns.stock.getPosition(stock)[2])
+            }
             // Figure out how much money we have for good upgrades, and how much money we have for side upgrades
             var maxCost = 0.1 * Math.min(ns.getPlayer().money, Number.MAX_SAFE_INTEGER)
             var extraMoney = 0.01 * Math.min(ns.getPlayer().money, Number.MAX_SAFE_INTEGER)

@@ -3,7 +3,11 @@
 /** @param {NS} ns **/
 export async function main(ns) {
 
-	let focus = true
+	// Check for important augmentations that affect what actions we focus on. Still check for simulacrum bool even though it's always
+	// false since we need it to be listed for factionwork to go properly.
+	let neuroreceptorBool = ns.getOwnedAugmentations().includes("Neuroreceptor Management Implant")
+	let simulacrumBool = false
+	let focus = !neuroreceptorBool
 		
 	// First run the program to get a list of all servers and make sure it completes
 	ns.run("servers.js")
@@ -23,14 +27,10 @@ export async function main(ns) {
 	// Run the contract solving program
 	ns.run("contracts.js")
 
-	// Run the stock data script to slowly farm money
+	// Run the stock data script to slowly farm money and wait for the first round of investment.
 	ns.run("findstocks.js")
 	ns.run("buystocks.js")
-
-	if (ns.getPlayer().hasCorporation == true
-	&& ns.getServerMaxRam("home") >= 2048) {
-		ns.run("corporation.js")
-	}
+	await ns.sleep(60 * 1000)
 
 	var servers0Port = ns.read("serverswith0ports.txt").split(",")
 	var servers1Port = ns.read("serverswith1ports.txt").split(",")
@@ -49,28 +49,32 @@ export async function main(ns) {
 	let finished = false
 	while (finished == false){
 		// Stop all current actions to let the script work.
-		ns.stopAction()
+		// ns.stopAction()
 
-		// Run scripts we need but cant until we have room
+		// Run scripts we need but cant run until we have room
 		if (ns.getServerMaxRam("home") >= 256){
 			ns.run("sleeves.js")
+			ns.run("factions.js")
 		}
 
 		// Upgrade home ram if we can afford it. If we're at high ram, run costly scripts.
-		if (ns.getServerMaxRam("home") < 512){
+		if (ns.getServerMaxRam("home") < 512
+		&& ns.getPlayer().money > 10 * ns.getUpgradeHomeRamCost()){
 			ns.upgradeHomeRam()
 		} else {
-			ns.run("wallstreetmegacorporations.js",1 ,!neuroreceptorBool , simulacrumBool)
+			ns.run("megacorporations.js", 1, focus, simulacrumBool)
 		}
 
+		// Buy tor if we can afford it
+		if (ns.getPlayer().tor == false) {
+			ns.purchaseTor()
+		}
 
-		// If we need port opening programs, buy or make them. Need to adjust business to account 
-		// for bladeburner actions
+		// If we need port opening programs, buy or make them.
 
-		// Set up a condition for having all needed programs, and one for all extras. It starts as true
+		// Set up a condition for having all needed programs. It starts as true
 		// but a single flaw gives false.
 		let allPrograms = true
-		let allExtras = true
 
 		// Check to see if you have the program. If we have it, open ports.
 		if (ns.fileExists("bruteSSH.exe", "home") == false) {
@@ -88,7 +92,8 @@ export async function main(ns) {
 		if (ns.fileExists("FTPCrack.exe", "home") == false
 		&& ns.fileExists("bruteSSH.exe","home") == true) {
 			allPrograms = false
-			if (ns.isBusy() == false){
+			if (ns.purchaseProgram("FTPCrack.exe") == false 
+			&& ns.isBusy() == false){
 				ns.createProgram("FTPCrack.exe", focus)
 			}
 		} else if(ns.fileExists("FTPCrack.exe", "home") == true){
@@ -97,17 +102,11 @@ export async function main(ns) {
 				await serverAccess(serv)
 			}
 		}
-		
-        // If isTrained is true we no longer change cities, and likely now meet money requirements for the appropriate factions.
-        if (ns.getServerMaxRam("home") >= 256){
-            ns.run("factions.js")
-        }
-
-		// Get the other hacking programs we want
 		if (ns.fileExists("relaySMTP.exe", "home") == false
 		&& ns.fileExists("FTPCrack.exe", "home") == true) {
 			allPrograms = false
-			if (ns.isBusy() == false
+			if (ns.purchaseProgram("relaySMTP.exe") == false 
+			&& ns.isBusy() == false
 			&& ns.getPlayer().hacking > 500){
 				ns.createProgram("relaySMTP.exe", focus)
 			}
@@ -124,6 +123,9 @@ export async function main(ns) {
 			&& ns.getPlayer().hacking > 1000){
 				ns.createProgram("HTTPWorm.exe", focus)
 			}
+			if (ns.getPlayer().money > 500_000_000){
+				ns.purchaseProgram("HTTPWorm.exe")
+			}
 		} else if(ns.fileExists("HTTPWorm.exe", "home") == true){
 			for (var i = 0; i < servers4Port.length; ++i) {
 				var serv = servers4Port[i];
@@ -137,6 +139,9 @@ export async function main(ns) {
 			&& ns.getPlayer().hacking > 2000){
 				ns.createProgram("SQLInject.exe", focus)
 			}
+			if (ns.getPlayer().money > 5_000_000_000){
+				ns.purchaseProgram("SQLInject.exe")
+			}
 		} else if(ns.fileExists("SQLInject.exe", "home") == true){
 				for (var i = 0; i < servers5Port.length; ++i) {
 					var serv = servers5Port[i];
@@ -146,8 +151,8 @@ export async function main(ns) {
 
 		//Check for all requirements being met
 		if (allPrograms == true 
-		&& (doExtras == false || allExtras == true)
-		&& ns.getServerMaxRam("home") >= 512){
+		&& ns.getServerMaxRam("home") >= 512
+		&& ns.getPlayer().has4SDataTixApi){
 			finished = true
 		}
 
@@ -157,7 +162,8 @@ export async function main(ns) {
 
 	// Once the startup is finished run the ascension manager. There's no need to do it earlier since it pulls
 	// focus and it works better at higher hacking levels anyway.
-	ns.spawn("startup.js")
+	ns.run("factionwork.js", 1, !neuroreceptorBool, simulacrumBool)
+	ns.spawn("augmentbuyer.js")
 
 	// Set up a function to open all possible ports, nuke the server and run the breakin script on it.
 	async function serverAccess(serv) {
@@ -180,6 +186,6 @@ export async function main(ns) {
 		await ns.scp("servers.txt", "home", serv)
 		await ns.scp("weaken.js", "home", serv)
 		await ns.scp("grow.js", "home", serv)
-		await ns.sleep("hack.js", "home", serv)
+		await ns.scp("hack.js", "home", serv)
 	}
 }

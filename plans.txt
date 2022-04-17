@@ -7,3 +7,7 @@ decide when to buy gang
 decide when to buy corp
 
 put max server money on hashmanager
+
+Adjust corp work to take stocks into account
+
+Make work go for companies that we have invested in first.

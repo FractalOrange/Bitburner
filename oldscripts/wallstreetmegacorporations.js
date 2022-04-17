@@ -1,5 +1,3 @@
-// I think this is obselete now we have sleeves.
-
 /** @param {NS} ns **/
 export async function main(ns) {
 
@@ -18,6 +16,7 @@ export async function main(ns) {
 	let megaCorps = [ "OmniTek Incorporated", "Bachman & Associates", "NWO", "Clarke Incorporated", "KuaiGong International", "Blade Industries", "ECorp", "MegaCorp", 
 	"Four Sigma", "Fulcrum Technologies"]
 
+	let bannedCompanies = ["Catalyst Ventures"]
 	let factionRep = 200 * 1000
 
 	let longStocks = []
@@ -33,6 +32,20 @@ export async function main(ns) {
 	}
 	
 	while (true == true){
+		// Wait until we can get the stock info from the other scripts
+		while (ns.getPortHandle(9).empty() == true) {
+			await ns.sleep(10)
+		}
+		while (ns.getPortHandle(9).empty() == false) {
+			longStocks.push(ns.readPort(9))
+			longCertainties.push(ns.readPort(10))
+		}
+		while (ns.getPortHandle(11).empty() == false) {
+			shortStocks.push(ns.readPort(11))
+			shortCertainties.push(ns.readPort(12))
+		}
+		// First work for megacorps in order to unlock all factions, as long as we're not working for a short stock
+		// megacorp.
 		for (let corp of megaCorps){
 			if (corp == "Fulcrum Technologies"){
 				factionRep = 250 * 1000
@@ -47,20 +60,9 @@ export async function main(ns) {
 					break
 				}
 			}
-			// Wait until we can get the stock info from the other scripts
-			while (ns.getPortHandle(9).empty() == true) {
-				await ns.sleep(10)
-			}
-			while (ns.getPortHandle(9).empty() == false) {
-				longStocks.push(ns.readPort(9))
-				longCertainties.push(ns.readPort(10))
-			}
-			while (ns.getPortHandle(11).empty() == false) {
-				shortStocks.push(ns.readPort(11))
-				shortCertainties.push(ns.readPort(12))
-			}
+
 			// Check we're not working for a short stock
-			if (ns.stock.getPosition(companyStock)[0] == 0) {
+			if (companyStock == "" || shortStocks.includes(companyStock)) {
 				continue
 			}
 
@@ -75,15 +77,43 @@ export async function main(ns) {
 				}
 				// Make sure we're not doing anything, including bladeburner.
 				if (ns.isBusy() == false
-					&& (ns.bladeburner.getCurrentAction().type == 'Idle'
+					&& (ns.getPlayer().inBladeburner == false 
+					|| ns.bladeburner.getCurrentAction().type == 'Idle'
 					|| simulacrumBool)){
 					// Now we actually work for the company for that field.
 					ns.applyToCompany(corp, bestJob(corp))
 					ns.workForCompany(corp, focus)
-					await ns.sleep(10 * 1000)
+					await ns.sleep(30 * 1000)
 					if (ns.getPlayer().workType == "Working for Company"){
 						ns.stopAction()
 					}
+				}
+			}
+		}
+		// When we're in all factions, just work for the best possible corp.
+		for (let stock of longStocks){
+			// First figure out what company the stock represents
+			let corp = ""
+			for (let company of companyStocks) {
+				if (company[1] == stock){
+					corp = company[0]
+				}
+			}
+			// If we can't work for the company, skip it.
+			if (bannedCompanies.includes(corp)) {
+				continue
+			}
+			// Make sure we're not doing anything, including bladeburner.
+			if (ns.isBusy() == false
+			&& (ns.getPlayer().inBladeburner == false 
+			|| ns.bladeburner.getCurrentAction().type == 'Idle'
+			|| simulacrumBool)){
+				// Now we actually work for the company for that field.
+				ns.applyToCompany(corp, bestJob(corp))
+				ns.workForCompany(corp, focus)
+				await ns.sleep(30 * 1000)
+				if (ns.getPlayer().workType == "Working for Company"){
+					ns.stopAction()
 				}
 			}
 		}

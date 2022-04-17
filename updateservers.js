@@ -4,7 +4,7 @@
 /** @param {NS} ns **/
 export async function main(ns) {
 
-	let moneyPercent = 0.1
+	let moneyPercent = 0.10
 	let limit = ns.getPurchasedServerLimit()
     let maxPrice = 100_000_000_000
 	// Figure out what the maximum worthwhile upgrade is (total cost not more than moneyPercent of total money)

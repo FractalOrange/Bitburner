@@ -117,7 +117,8 @@ export async function main(ns) {
             stock.price = ns.stock.getPrice(stock.name)
 
             // Update certainty and direction
-            stock.certainty = ns.stock.getForecast(stock.name) - 0.5
+            // Now the certainty is the expected value per tick, including volatility.
+            stock.certainty = (2 * ns.stock.getForecast(stock.name) - 1) * ns.stock.getVolatility(stock.name)
             stock.direction = Math.sign(stock.certainty)
     
             // Store the current estimate

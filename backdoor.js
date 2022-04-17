@@ -2,7 +2,7 @@
 export async function main(ns) {
 
     // A variable to determine if we should break the bitnode or not
-    let breakBitnode = false
+    let breakBitnode = true
 	let servers = ["home"]
 	// This is more efficient code for finding servers, not required for backdoor but needs to be copied.
 

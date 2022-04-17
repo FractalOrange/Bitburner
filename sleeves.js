@@ -37,6 +37,9 @@ export async function main(ns) {
             // First check for available augments and purchase them. We set the augmentCostThreshold based on current money
             if (ns.sleeve.getSleeveStats(i).shock == 0){
                 augmentCostThreshold = ns.getPlayer().money * 0.01
+                if (ns.getPlayer().bitNodeN == 8) {
+                    augmentCostThreshold = 0
+                }
                 // Set up an array to store augments we want to buy. There's no price increase, but we want to make sure we hit the min threshold.
                 let augmentsToBuy = []
                 for (let augment of ns.sleeve.getSleevePurchasableAugs(i)){

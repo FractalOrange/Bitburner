@@ -47,13 +47,6 @@ export async function main(ns) {
 		}
 	}
 
-   	// Sell off all stocks for extra money - add 7.5GB
-	if (ns.getPlayer().hasTixApiAccess == true){
-		ns.scriptKill("basicstocks.js", "home")
-		for (let sym of ns.stock.getSymbols()){
-			ns.stock.sell(sym, ns.stock.getPosition(sym)[0])
-		}
-	}
 	// Spend all hashes - add 4 gb
 	while (ns.hacknet.spendHashes("Sell for Money")) {}
 
@@ -124,6 +117,6 @@ export async function main(ns) {
 	ns.stopAction()
 	await ns.sleep(1000)
 	// Install augments and run startup
-	ns.installAugmentations("startup.js")
+	ns.installAugmentations("wallstreetstartup.js")
 
 }

@@ -24,8 +24,13 @@ export async function main(ns) {
     let officePercent = 0.0001
     let productInvestment = 0.001
     let upgradePercent = 0.0001
-
-    ns.corporation.createCorporation("Microdynamic")
+    if (ns.getPlayer().hasCorporation == false){
+        // While we have less than twice as much money as it costs to create a corp, just wait
+        while (ns.getPlayer().money < 2 * 150_000_000_000) {
+            await ns.sleep(5_000)
+        }
+    }
+    ns.corporation.createCorporation("Microdynamic", true)
 
     let divisionsOwned = []
     for (let division of ns.corporation.getCorporation().divisions){

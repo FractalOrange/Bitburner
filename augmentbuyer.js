@@ -41,6 +41,10 @@ export async function main(ns) {
 	if (ns.gang.inGang() && ns.gang.getGangInformation().respect > 1_000_000){
 		minAugments = 3
 	}
+	// In bitnode 8 we really want to wait before buying augments
+	if (ns.getPlayer().bitNodeN == 8){
+		minAugments = 8
+	}
 	let maxAugments = 2 * minAugments
 
 
@@ -54,6 +58,7 @@ export async function main(ns) {
 	let suggestedAugments = []
 	let bannedAugments = ns.getOwnedAugmentations(true)
 	let tempBannedAugments = []
+	let lastBannedAugments = []
 	
 	// This is the loop condition until we can ascend
 	let readyToAscend = false
@@ -73,6 +78,16 @@ export async function main(ns) {
 		augmentsToBuy = []
 		factionsToFarm = []
 		bladeburnerAugments = []
+
+		// Record which augments were temporarily banned last time. If we run through the whole loop without banning 
+		// more, reset tempBannedAugments to 0.
+		lastBannedAugments = Array.from(tempBannedAugments)
+
+		let totalCapital = ns.getPlayer().money
+		for (let stock of ns.stock.getSymbols()) {
+			totalCapital += ns.stock.getPosition(stock)[0] * ns.stock.getPosition(stock)[1] + ns.stock.getPosition(stock)[2] * ns.stock.getPosition(stock)[3]
+		}
+		
 
 		// Create a list of all available non-bladeburner augments.
 		for (let faction of ns.getPlayer().factions){
@@ -130,8 +145,6 @@ export async function main(ns) {
 				}
 			}
 		}
-		// Now we reset the tempBannedAugments to allow them to be considered next iteration
-		tempBannedAugments = []
 
 		// Set maxAugments equal to the larger of half of all all available augments and least minAugments + 1
 		maxAugments = Math.max(minAugments + 1, Math.floor(availableAugments.length / 2))
@@ -141,7 +154,7 @@ export async function main(ns) {
 
 
 		// If we have enough money to easily buy the blade's simulacrum, do it. It hampers this current run but it is an extremely useful augment.
-		if (ns.getPlayer().money > 3 * ns.getAugmentationPrice("The Blade's Simulacrum")) {
+		if (ns.getPlayer().inBladeburner && totalCapital > 3 * ns.getAugmentationPrice("The Blade's Simulacrum")) {
 			augmentsToBuy.push("The Blade's Simulacrum")
 		}
 
@@ -165,7 +178,7 @@ export async function main(ns) {
 				// If not and it was a regular augment, consider the next one. If it was a  bladeburner augment, add the augment 
 				// to the augmentsToBuy and remove it from the bladeburner list, while also re-visiting the current point in
 				// the availableAugment array to make sure nothing gets skipped.
-				if (potentialCost > ns.getPlayer().money){
+				if (potentialCost > totalCapital){
 					break
 				} else {
 					augmentsToBuy.push(availableAugments[i])
@@ -225,7 +238,7 @@ export async function main(ns) {
 			// If not and it was a regular augment, consider the next one. If it was a  bladeburner augment, add the augment 
 			// to the augmentsToBuy and remove it from the bladeburner list, while also re-visiting the current point in
 			// the availableAugment array to make sure nothing gets skipped.
-			if (potentialCost > ns.getPlayer().money){
+			if (potentialCost > totalCapital){
 				continue
 			} else if (chooseBladeburner == true){
 				augmentsToBuy.push(bladeburnerAugments.shift())
@@ -252,7 +265,7 @@ export async function main(ns) {
 			// If not and it was a regular augment, consider the next one. If it was a  bladeburner augment, add the augment 
 			// to the augmentsToBuy and remove it from the bladeburner list, while also re-visiting the current point in
 			// the availableAugment array to make sure nothing gets skipped.
-			if (potentialCost > ns.getPlayer().money){
+			if (potentialCost > totalCapital){
 				break
 			} else {
 				augmentsToBuy.push(bladeburnerAugments.shift())
@@ -289,7 +302,7 @@ export async function main(ns) {
 				if (ns.getFactionFavor(highestFavorFaction) >= 
 				ns.getFavorToDonate(highestFavorFaction) * ns.getBitNodeMultipliers().RepToDonateToFaction
 				&& (ns.getAugmentationRepReq(augment) - ns.getFactionRep(highestFavorFaction)) * 10**6 
-				/ ns.getPlayer().faction_rep_mult < 0.1 * ns.getPlayer().money){
+				/ ns.getPlayer().faction_rep_mult < 0.1 * totalCapital){
 					ns.donateToFaction(highestFavorFaction, (ns.getAugmentationRepReq(augment) - ns.getFactionRep(highestFavorFaction)) 
 					* 10**6 / ns.getPlayer().faction_rep_mult)
 					continue
@@ -299,7 +312,7 @@ export async function main(ns) {
 				// off the current list as in the next code block. (Don't remove neuroflux)
 				if (ns.getFactionFavor(highestFavorFaction) + ns.getFactionFavorGain(highestFavorFaction) >=
 				ns.getFavorToDonate(highestFavorFaction) * ns.getBitNodeMultipliers().RepToDonateToFaction
-				&& ns.getAugmentationRepReq(augment) * 10**6 / ns.getPlayer().faction_rep_mult < 0.1 * ns.getPlayer().money){
+				&& ns.getAugmentationRepReq(augment) * 10**6 / ns.getPlayer().faction_rep_mult < 0.1 * totalCapital){
 					augmentsToBuy.splice(i-1, 1)
 					availableAugments.splice(availableAugments.indexOf(augment),1)
 					tempBannedAugments.push(augment)
@@ -350,7 +363,7 @@ export async function main(ns) {
 				if (ns.getFactionFavor(highestFavorFaction) >= 
 				ns.getFavorToDonate(highestFavorFaction) * ns.getBitNodeMultipliers().RepToDonateToFaction
 				&& (ns.getAugmentationRepReq(augment) - ns.getFactionRep(highestFavorFaction)) * 10**6 
-				/ ns.getPlayer().faction_rep_mult + ns.getAugmentationPrice(augment) < ns.getPlayer().money){
+				/ ns.getPlayer().faction_rep_mult + ns.getAugmentationPrice(augment) < totalCapital){
 					ns.donateToFaction(highestFavorFaction, (ns.getAugmentationRepReq(augment) - ns.getFactionRep(highestFavorFaction)) 
 					* 10**6 / ns.getPlayer().faction_rep_mult)
 				} else {
@@ -373,9 +386,25 @@ export async function main(ns) {
 		// for (let faction of tempBannedAugments) {
 		// 	await ns.writePort(4, faction)
 		// }
+		// If we haven't added anything new to tempBannedAugments, reset it.
+		if (tempBannedAugments.length == lastBannedAugments.length) {
+			tempBannedAugments = []
+			lastBannedAugments = []
+		}
 		await ns.sleep(10 * 1000)
 	}
 
+	// Kill all scripts that might try to spend money
+	ns.kill("buystocks.js", "home")
+	ns.kill("updateservers.js", "home")
+	ns.kill("hacknetmanager.js", "home")
+	ns.kill("gangs.js", "home")
+	ns.kill("sleeves.js", "home")
+	await ns.sleep(2000)
+	for (let sym of ns.stock.getSymbols()){
+		ns.stock.sell(sym, ns.stock.getPosition(sym)[0])
+		ns.stock.sellShort(sym, ns.stock.getPosition(sym)[2])
+	}
 	// Once we're ready to ascend, buy augments here since we already know which 
 	// ones and where to buy them.
 

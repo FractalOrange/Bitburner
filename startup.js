@@ -45,8 +45,7 @@ export async function main(ns) {
 	// Run the stock data script to slowly farm money
 	ns.run("findstocks.js")
 
-	if (ns.getPlayer().hasCorporation == true
-	&& ns.getServerMaxRam("home") >= 2048) {
+	if (ns.getServerMaxRam("home") >= 2048) {
 		ns.run("corporation.js")
 	}
 

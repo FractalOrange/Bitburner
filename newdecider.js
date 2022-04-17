@@ -117,7 +117,7 @@ export async function main(ns) {
 				if (ns.getServerMaxRam(futureHackedServers[i]) == 0) {
 					futureHackedServers.splice(i, 1)
 				} else {
-					hackedServers.push(futureHackedServers.splice(i, 1))
+					hackedServers.push(futureHackedServers.splice(i, 1)[0])
 				}
 				i--
 			}
@@ -141,6 +141,7 @@ export async function main(ns) {
 			await ns.scp("training.js", "home", usableServers[i])
 		}
 
+
 		// Put sharing on all free servers if wanted
 		if (sharing == true) {
 			for (let j = 0; j < usableServers.length; j++) {
@@ -159,7 +160,7 @@ export async function main(ns) {
 					ns.exec("sharing.js", server, availableThreads)
 				}
 			}
-		} else if (training == true) {
+		} else if (training == true && hackedServers.includes("joesguns")) {
 			 for (let j = 0; j < usableServers.length; j++) {
 				let server = usableServers[j]
 				// ns.scriptKill("sharing.js", server)
@@ -201,11 +202,12 @@ export async function main(ns) {
 			let growStock = false
 			let hackStock = false
 			for (let company of companyStocks) {
-				if (ns.getServer(target) == company[0]){
+				if (ns.getServer(target).organizationName == company[0]){
 					companyStock = company[1]
 					break
 				}
 			}
+
 			for (let stock of longStocks) {
 				if (stock == companyStock) {
 					growStock = true
