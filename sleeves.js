@@ -124,10 +124,11 @@ export async function main(ns) {
                 && ns.sleeve.getTask(i).crime == "Homicide"){
                     continue
                 } else {
-                    ns.sleeve.setToCommitCrime(i, "homicide")
+                    ns.sleeve.setToCommitCrime(i, "Homicide")
                     continue
                 }
-            } else if (ns.gang.inGang() == false) {
+            } 
+            else if (ns.gang.inGang() == false) {
                 for (let faction of ns.getPlayer().factions) {
                     if (combatGangs.includes(faction)){
                         if (ns.gang.createGang(faction)) {
@@ -142,10 +143,15 @@ export async function main(ns) {
             // Once basic tasks required for run are met, reduce shock.
             if (ns.sleeve.getSleeveStats(i).shock > 0) {
                 // If the gang is still getting started, make sure we're committing homicide.
-                if (!(ns.sleeve.getTask(i).task == "Crime"
-                && ns.sleeve.getTask(i).crime == "Homicide")
+                if (ns.gang.inGang()
                 && ns.gang.getGangInformation().respect < 1_000_000){
-                    ns.sleeve.setToCommitCrime(i, "homicide")
+                    if (!(ns.sleeve.getTask(i).task == "Crime"
+                    && ns.sleeve.getTask(i).crime == "Homicide")){
+                        ns.sleeve.setToCommitCrime(i, "Homicide")
+                    }
+                    else {
+                        continue
+                    }
                     // If the gang is going strong, recover shock.
                 } else {
                     ns.sleeve.setToShockRecovery(i)
@@ -158,7 +164,7 @@ export async function main(ns) {
             // If we're already working for a faction, stop if we've been doing it for more than 1 minute, otherwise skip to the next sleeve.
             if (ns.sleeve.getTask(i).task == "Faction"){
                 if (ns.sleeve.getInformation(i).timeWorked > 60 * 1000){
-                    ns.sleeve.setToCommitCrime(i, "homicide")
+                    ns.sleeve.setToCommitCrime(i, "Homicide")
                 } else {
                     continue
                 }
@@ -216,7 +222,7 @@ export async function main(ns) {
             // First make sure we're not already working. 
             if (ns.sleeve.getTask(i).task == "Company"){
                 if (ns.getCompanyRep(ns.sleeve.getTask(i).location) > factionRep){
-                    ns.sleeve.setToCommitCrime(i, "heist")
+                    ns.sleeve.setToCommitCrime(i, "Heist")
                 }
                 continue
             }

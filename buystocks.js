@@ -7,6 +7,7 @@ export async function main(ns) {
     let percentageLimit = .9
     let sellAllFrequency = 20
     let loopCounter = 0
+    let buy4SCost = 25_000_000_000 * ns.getBitnodeMultipliers()["FourSigmaMarketDataCost"] + 1_000_000_000 * ns.getBitnodeMultipliers()["FourSigmaMarketDataApiCost"]
 
     while (true == true){
         let stocks = []
@@ -48,7 +49,7 @@ export async function main(ns) {
         }
 
         if (ns.getPlayer().has4SData == false 
-        && ns.getPlayer().money > 50_000_000_000) {
+        && ns.getPlayer().money > 2 * buy4SCost) {
             ns.stock.purchase4SMarketData()
             ns.stock.purchase4SMarketDataTixApi()
         }
@@ -63,7 +64,8 @@ export async function main(ns) {
             }
             // Reset the counter
             loopCounter = 0
-            await ns.sleep(10_000)
+            await ns.sleep(30_000)
+            continue
         }
 
 
@@ -96,36 +98,42 @@ export async function main(ns) {
             if (length == "Long") {
                 let stock = longStocks.shift()
                 longCertainties.shift()
-                if (currentInvestment + ns.stock.getPurchaseCost(stock, 1000, "Long") <= investmentLimit) {
+                if (currentInvestment + ns.stock.getPurchaseCost(stock, 1000, "Long") <= investmentLimit
+                && ns.stock.getPosition(stock)[0] + 1000 <= ns.stock.getMaxShares(stock)) {
                     let newStocks = 1000
                     while (currentInvestment + ns.stock.getPurchaseCost(stock, newStocks + 1000, "Long") <= investmentLimit
                     && ns.stock.getPosition(stock)[0] + newStocks + 1000 <= ns.stock.getMaxShares(stock)){
                         newStocks += 1000
                     }
-                    // Update currentInvestment. Can't easily update position in the object, so we
-                    // re-compute the objects each loop.
-                    currentInvestment += ns.stock.getPurchaseCost(stock, newStocks, "Long")
-                    ns.stock.buy(stock, newStocks)
+                    if (ns.stock.getPurchaseCost(stock,newStocks, "Long") >= 10_000_000){
+                        // Update currentInvestment. Can't easily update position in the object, so we
+                        // re-compute the objects each loop.
+                        currentInvestment += ns.stock.getPurchaseCost(stock, newStocks, "Long")
+                        ns.stock.buy(stock, newStocks)
+                    }
                 }
             }
             if (length == "Short") {
                 let stock = shortStocks.shift()
                 shortCertainties.shift()
-                if (currentInvestment + ns.stock.getPurchaseCost(stock, 1000, "Short") <= investmentLimit) {
+                if (currentInvestment + ns.stock.getPurchaseCost(stock, 1000, "Short") <= investmentLimit
+                && ns.stock.getPosition(stock)[2] + 1000 <=ns.stock.getMaxShares(stock)) {
                     let newStocks = 1000
                     while (currentInvestment + ns.stock.getPurchaseCost(stock, newStocks + 1000, "Short") <= investmentLimit
                     && ns.stock.getPosition(stock)[2] + newStocks + 1000 <=ns.stock.getMaxShares(stock)){
                         newStocks += 1000
                     }
-                    // Update currentInvestment. Can't easily update position in the object, so we
-                    // re-compute the objects each loop.
-                    currentInvestment += ns.stock.getPurchaseCost(stock, newStocks, "Short")
-                    ns.stock.short(stock, newStocks)
+                    if (ns.stock.getPurchaseCost(stock,newStocks, "Short") >= 10_000_000){
+                        // Update currentInvestment. Can't easily update position in the object, so we
+                        // re-compute the objects each loop.
+                        currentInvestment += ns.stock.getPurchaseCost(stock, newStocks, "Short")
+                        ns.stock.short(stock, newStocks)
+                    }
                 }
             }
         }
         loopCounter++
-        await ns.sleep(30_000)
+        await ns.sleep(60_000)
     }
 
 

@@ -11,7 +11,9 @@ export async function main(ns) {
     }
     await ns.sleep(19.5 * 1000)
 
-    while (true == true) {
+    // Sometimes the loop gets stuck, so we reset it every 30 minutes. The other gangs script
+    // will automatically re-start this one.
+    for (let i = 0; i < 90; i++) {
         let members = ns.gang.getMemberNames()
         let memberTasks = []
 

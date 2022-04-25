@@ -55,6 +55,7 @@ export async function main(ns) {
 		if (ns.getServerMaxRam("home") >= 256){
 			ns.run("sleeves.js")
 			ns.run("factions.js")
+			ns.run("purchaseservers.js")
 		}
 
 		// Upgrade home ram if we can afford it. If we're at high ram, run costly scripts.

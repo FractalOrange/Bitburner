@@ -565,7 +565,9 @@ export async function main(ns) {
                         return runningTotal
                     }
                     answer = numSum(number,number-1)
-                } else if(contractDetails[3] == "Generate IP Addresses"){
+                } 
+                
+                else if(contractDetails[3] == "Generate IP Addresses"){
                     // Turn the numbers into an array
                     let numbers = contractDetails[4].split("").map(Number)
     
@@ -629,14 +631,12 @@ export async function main(ns) {
                     }
                 }
                 else{
-                    ns.tprint("New contract type!")
-                    ns.tprint(contractDetails)
+                    ns.toast("New contract type ("+ contractDetails[2] +") at " + contractDetails[0] + "!", "warning", 5000)
                     continue
                 }
                 let report = ns.codingcontract.attempt(answer, contract, server, { returnReward: true })
                 if(report === ""){
-                    report = ["You done messed up",contractDetails]
-                    ns.tprint(report)
+                    report = ["You done messed up" + " " + contractDetails[0] + " " + contractDetails[2]]
                 }
                 ns.toast(report, "success", 5000)
             }

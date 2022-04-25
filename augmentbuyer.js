@@ -33,6 +33,8 @@
 /** @param {NS} ns **/
 export async function main(ns) {
 
+	// Set the factor by which augment prices are multiplied when each one is bought.
+	let augmentCostMultiplier = 1.77
 
 	// Set the minimum number of augments required to ascend
 	let lotsOfAugments = 45
@@ -172,7 +174,7 @@ export async function main(ns) {
 				let potentialCost = 0
 				// We buy from most to least expensive, so the least expensive ones will be doubled the most.
 				for (let j = 0; j < potentialAugments.length; j++){
-					potentialCost = 1.9 * potentialCost + ns.getAugmentationPrice(potentialAugments[j])
+					potentialCost = augmentCostMultiplier * potentialCost + ns.getAugmentationPrice(potentialAugments[j])
 				}
 				// If the new potentialCost with new augment is too high, break and keep the current set of potentialAugments.
 				// If not and it was a regular augment, consider the next one. If it was a  bladeburner augment, add the augment 
@@ -180,11 +182,12 @@ export async function main(ns) {
 				// the availableAugment array to make sure nothing gets skipped.
 				if (potentialCost > totalCapital){
 					break
-				} else {
-					augmentsToBuy.push(availableAugments[i])
+				} else if (augmentsToBuy.includes(augment) == false) {
+					augmentsToBuy.push(augment)
 				}
 			}
 		}
+
 		if (augmentsToBuy.length >= minAugments){
 			break
 		}
@@ -203,7 +206,6 @@ export async function main(ns) {
 		bladeburnerAugments.sort((a,b) => ns.getAugmentationPrice(a) - ns.getAugmentationPrice(b))
 
 		for (let i = 0; i < availableAugments.length; i++){
-
 			// If we reach the max number of augments, stop looking for more (strict inequality to account for 
 			// neurogovernor) 
 			if (augmentsToBuy.length > maxAugments){
@@ -232,7 +234,7 @@ export async function main(ns) {
 			let potentialCost = 0
 			// We buy from most to least expensive, so the least expensive ones will be doubled the most.
 			for (let j = 0; j < potentialAugments.length; j++){
-				potentialCost = 1.9 * potentialCost + ns.getAugmentationPrice(potentialAugments[j])
+				potentialCost = augmentCostMultiplier * potentialCost + ns.getAugmentationPrice(potentialAugments[j])
 			}
 			// If the new potentialCost with new augment is too high, break and keep the current set of potentialAugments.
 			// If not and it was a regular augment, consider the next one. If it was a  bladeburner augment, add the augment 
@@ -243,7 +245,7 @@ export async function main(ns) {
 			} else if (chooseBladeburner == true){
 				augmentsToBuy.push(bladeburnerAugments.shift())
 				i --
-			} else if (chooseBladeburner == false) {
+			} else if (chooseBladeburner == false && augmentsToBuy.includes(newAugment) == false) {
 				augmentsToBuy.push(newAugment)
 			}
 		}
@@ -259,7 +261,7 @@ export async function main(ns) {
 			let potentialCost = 0
 			// We buy from most to least expensive, so the least expensive ones will be doubled the most.
 			for (let j = 0; j < potentialAugments.length; j++){
-				potentialCost = 1.9 * potentialCost + ns.getAugmentationPrice(potentialAugments[j])
+				potentialCost = augmentCostMultiplier * potentialCost + ns.getAugmentationPrice(potentialAugments[j])
 			}
 			// If the new potentialCost with new augment is too high, break and keep the current set of potentialAugments.
 			// If not and it was a regular augment, consider the next one. If it was a  bladeburner augment, add the augment 
@@ -282,6 +284,7 @@ export async function main(ns) {
 			continue
 		}
 
+
 		// Add neuroFlux to the start of the augmentsToBuy array to ensure we can afford it if we try to ascend without 
 		// any augments
 		augmentsToBuy.unshift("NeuroFlux Governor")
@@ -303,8 +306,9 @@ export async function main(ns) {
 				ns.getFavorToDonate(highestFavorFaction) * ns.getBitNodeMultipliers().RepToDonateToFaction
 				&& (ns.getAugmentationRepReq(augment) - ns.getFactionRep(highestFavorFaction)) * 10**6 
 				/ ns.getPlayer().faction_rep_mult < 0.1 * totalCapital){
+					while(
 					ns.donateToFaction(highestFavorFaction, (ns.getAugmentationRepReq(augment) - ns.getFactionRep(highestFavorFaction)) 
-					* 10**6 / ns.getPlayer().faction_rep_mult)
+					* 10**6 / ns.getPlayer().faction_rep_mult) == false){}
 					continue
 				}
 
@@ -341,12 +345,13 @@ export async function main(ns) {
 				}
 			}
 			// If we have the rep for the cheapest proper augment and either the min number of augments, or
-			// the min number of augments including the ones that are farmed more efficiently next time, and we've
+			// the min number of augments including the ones that are farmed more efficiently next time (and we have at least
+			// half the min augments, and we've
 			// been waiting more than an hour since the last augmentation to allow for things to settle, then we ascend.
 			if (i == 2
 			&& factionsToFarm.length == 0
 			&& (augmentsToBuy.length - 1 >= minAugments 
-			|| (augmentsToBuy.length - 1 >= 1 && augmentsToBuy.length - 1 + tempBannedAugments.length >= minAugments 
+			|| (augmentsToBuy.length - 1 >= Math.floor(minAugments / 2) && augmentsToBuy.length - 1 + tempBannedAugments.length >= minAugments 
 			&& ns.getTimeSinceLastAug() > startupTime ))){
 				readyToAscend = true
 				break

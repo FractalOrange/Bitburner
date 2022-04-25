@@ -17,7 +17,7 @@ export async function main(ns) {
 
     // Set a stat threshold for carrying out bladeburner tasks
     let bladeburnerStatThresh = 500
-    let crimeTime = 30 * 60 * 1000
+    let crimeTime = 10 * 60 * 1000
     
     while (true == true){
         // We want to run 1 full loop of bladeburner, then spend the same amount of time on rep farming.

@@ -19,6 +19,7 @@ export async function main(ns) {
 
 	// Set the threshold for base level of stats
 	let statThreshold = 100
+	let combatGangs = ["Slum Snakes", "Speakers for the Dead", "The Dark Army", "The Syndicate", "Tetrads"]
 		
 	// First run the program to get a list of all servers and make sure it completes
 	ns.run("servers.js")
@@ -77,13 +78,14 @@ export async function main(ns) {
 		if (ns.getServerMaxRam("home") >= 256){
 			ns.run("purchaseservers.js")
 			ns.run("sleeves.js")
+			ns.run("buystocks.js")
 		}
 
 		// Upgrade home ram if we can afford it. If we're at high ram, run costly scripts.
 		if (ns.getServerMaxRam("home") < 512){
 			ns.upgradeHomeRam()
 		} else {
-			ns.run("megacorporations.js",1 ,!neuroreceptorBool , simulacrumBool)
+			ns.run("megacorporations.js",1 , !neuroreceptorBool , simulacrumBool)
 		}
 		
 		// Buy tor if we can afford it
@@ -187,6 +189,18 @@ export async function main(ns) {
 			// If isTrained is true we no longer change cities, and likely now meet money requirements for the appropriate factions.
             if (ns.getServerMaxRam("home") >= 256){
                 ns.run("factions.js")
+            }
+
+			if (ns.gang.inGang() == false) {
+                for (let faction of ns.getPlayer().factions) {
+                    if (combatGangs.includes(faction)){
+                        if (ns.gang.createGang(faction)) {
+                            ns.run("gangs.js")
+                            ns.run("gangwarfare.js")
+                            break
+                        }
+                    }
+                }
             }
 		}
 
@@ -296,6 +310,6 @@ export async function main(ns) {
 		await ns.scp("servers.txt", "home", serv)
 		await ns.scp("weaken.js", "home", serv)
 		await ns.scp("grow.js", "home", serv)
-		await ns.sleep("hack.js", "home", serv)
+		await ns.scp("hack.js", "home", serv)
 	}
 }

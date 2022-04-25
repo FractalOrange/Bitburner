@@ -114,7 +114,8 @@ export async function main(ns) {
 			if (ns.isBusy() == false
 			&& (ns.getPlayer().inBladeburner == false 
 			|| ns.bladeburner.getCurrentAction().type == 'Idle'
-			|| simulacrumBool)){
+			|| simulacrumBool)
+			&& bestJob(corp) != ""){
 				// Now we actually work for the company for that field.
 				ns.applyToCompany(corp, bestJob(corp))
 				ns.workForCompany(corp, focus)

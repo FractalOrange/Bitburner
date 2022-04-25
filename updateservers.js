@@ -28,7 +28,7 @@ export async function main(ns) {
 				}
 			}
 		}
-		await ns.sleep(60 * 1000)
+		await ns.sleep(5 * 1000)
 	}
 
 }
